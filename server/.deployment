@@ -1,0 +1,16 @@
+# Azure Web App 部署配置
+# 詳見：https://docs.microsoft.com/en-us/azure/app-service/configure-language-python
+
+[settings]
+# Python 版本
+PYTHON_VERSION = "3.11"
+
+# 應用程式入口點
+SCM_DO_BUILD_DURING_DEPLOYMENT = true
+
+# 啟動命令
+STARTUP_FILE = "startup.sh"
+
+# 環境變數
+FLASK_APP = "app.py"
+FLASK_ENV = "production"

@@ -397,8 +397,12 @@ def health_check():
             'status': 'unhealthy',
             'database': 'disconnected',
             'error': str(e),
-            'timestamp': datetime.datetime.utcnow().isoformat() + 'Z'
-        }), 500
+            'timestamp': datetime.datetime.utcnow().isoformat() + 'Z'        }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    # 在生產環境中使用環境變數中的端口
+    import os
+    port = int(os.environ.get('PORT', 8000))
+    debug = os.environ.get('FLASK_ENV', 'development') == 'development'
+    
+    app.run(debug=debug, host='0.0.0.0', port=port)
