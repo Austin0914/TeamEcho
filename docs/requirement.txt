@@ -1,0 +1,327 @@
+openapi: 3.1.0
+info:
+  title: Simple Form Service
+  version: "1.0.0"
+  description: |
+    最小可用 (MVP) API：
+      • 使用者註冊 / 登入  
+      • 表單建立 / 重新產生邀請碼  
+      • 填答者透過邀請碼填寫回饋  
+      • 表單擁有者查詢所有回饋
+servers:
+  - url: http://localhost:8000
+    description: Local dev
+
+tags:
+  - name: Users
+    description: 使用者註冊與基本資料
+  - name: Sessions
+    description: 登入／Token 管理
+  - name: Forms
+    description: 表單建立與邀請碼
+  - name: Invite
+    description: 填答者透過邀請碼互動
+  - name: Responses
+    description: 擁有者查看回饋
+
+paths:
+  /users:
+    post:
+      summary: 使用者註冊
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        "201":
+          description: 註冊成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+        "409":
+          $ref: '#/components/responses/EmailConflict'
+
+  /sessions:
+    post:
+      summary: 以 email / password 登入並取得 JWT
+      tags: [Sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: 登入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /forms:
+    post:
+      summary: 建立新表單
+      tags: [Forms]
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormCreate'
+      responses:
+        "201":
+          description: 建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormRead'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /forms/{form_id}/invite-code:
+    post:
+      summary: 重新產生 (或重寄) 邀請碼
+      tags: [Forms]
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - in: path
+          name: form_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 新邀請碼
+          content:
+            application/json:
+              schema:
+                type: string
+                example: NzJmMjQ
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/FormNotFound'
+
+  /invite/{code}:
+    get:
+      summary: 依邀請碼驗證表單是否有效
+      tags: [Invite]
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 表單有效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormRead'
+        "410":
+          $ref: '#/components/responses/InviteExpired'
+
+  /invite/{code}/responses:
+    post:
+      summary: 透過邀請碼提交回饋
+      tags: [Invite]
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackIn'
+      responses:
+        "201":
+          description: 回饋已儲存
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackOut'
+        "404":
+          $ref: '#/components/responses/FormNotFound'
+
+  /forms/{form_id}/responses:
+    get:
+      summary: 取得指定表單的所有回饋
+      tags: [Responses]
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - in: path
+          name: form_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 回饋列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedbackOut'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/FormNotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ---------- Auth ----------
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+    UserCreate:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    UserRead:
+      type: object
+      readOnly: true
+      properties:
+        uniq_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+
+    # ---------- Form ----------
+    FormCreate:
+      type: object
+      properties:
+        expire_at:
+          type: string
+          format: date-time
+          nullable: true
+    FormRead:
+      type: object
+      readOnly: true
+      properties:
+        form_id:
+          type: string
+        invite_code:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        expire_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ---------- Feedback ----------
+    FeedbackIn:
+      type: object
+      required: [feedback_content]
+      properties:
+        feedback_content:
+          type: string
+          maxLength: 1000
+    FeedbackOut:
+      allOf:
+        - $ref: '#/components/schemas/FeedbackIn'
+        - type: object
+          properties:
+            form_id:
+              type: string
+            person_uid:
+              type: string
+
+    # ---------- Error ----------
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: FORM_NOT_FOUND
+        message:
+          type: string
+          example: 表單不存在
+
+  responses:
+    Unauthorized:
+      description: 未授權或 Token 失效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value: { code: UNAUTHORIZED, message: 未授權 }
+    EmailConflict:
+      description: 信箱已存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value: { code: EMAIL_CONFLICT, message: 信箱已被註冊 }
+    FormNotFound:
+      description: 表單不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value: { code: FORM_NOT_FOUND, message: 查無此表單 }
+    InviteExpired:
+      description: 邀請碼已過期或無效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value: { code: INVITE_EXPIRED, message: 邀請碼已過期 }
