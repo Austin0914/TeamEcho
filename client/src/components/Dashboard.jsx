@@ -114,14 +114,15 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h2>表單管理</h2>
+        <h2>回饋表單建立與管理</h2>
         <button onClick={onLogout} className="logout-btn">
           登出
         </button>
       </div>
 
       <div className="create-form-section">
-        <h3>建立表單</h3>
+        <h3>建立回饋表單</h3>
+        <h4>表單名稱</h4>
         <div className="form-group">
           <input
             placeholder="表單名稱"
@@ -130,7 +131,7 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
           />
         </div>
 
-        <h4>受邀者</h4>
+        <h4>被回饋者</h4>
         <div className="respondents-list">
           {respondents.map((r, i) => (
             <div key={i} className="respondent-item">
@@ -140,7 +141,7 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
                 onChange={(e) => updateRespondent(i, "name", e.target.value)}
               />
               <input
-                placeholder="Email"
+                placeholder="信箱"
                 value={r.email}
                 onChange={(e) => updateRespondent(i, "email", e.target.value)}
                 type="email"
@@ -158,7 +159,7 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
         </div>
 
         <div className="form-actions">
-          <button onClick={addRespondent}>新增受邀者</button>
+          <button onClick={addRespondent}>新增被回饋者</button>
           <button onClick={createForm} className="create-btn">
             建立表單
           </button>
@@ -166,7 +167,7 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
       </div>
 
       <div className="forms-list-section">
-        <h3>已建立表單</h3>
+        <h3>已建立回饋表單</h3>
         {forms.length === 0 ? (
           <p>尚未建立任何表單</p>
         ) : (
