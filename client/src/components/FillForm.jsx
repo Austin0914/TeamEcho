@@ -149,7 +149,6 @@ function FillForm({ onBack }) {
               <div key={respondent.email} className="respondent-feedback-item">
                 <div className="respondent-info">
                   <h3>{respondent.name}</h3>
-                  <span className="respondent-email">{respondent.email}</span>
                 </div>
                 <div className="feedback-input-section">
                   <textarea
