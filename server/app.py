@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from functools import wraps
 import uuid
 import datetime
 
 app = Flask(__name__)
+CORS(app)
 
 # ----- In-memory storage -----
 users = {}
@@ -104,6 +106,24 @@ def create_form():
     return jsonify({k: form[k] for k in ['form_id', 'title', 'invite_code', 'created_at', 'expire_at']}), 201
 
 
+@app.route('/forms', methods=['GET'])
+@auth_required
+def list_forms():
+    user_forms = []
+    for form_id, form in forms.items():
+        if form['created_by'] == request.user_id:
+            user_forms.append({
+                'form_id': form['form_id'],
+                'title': form['title'],
+                'invite_code': form['invite_code'],
+                'created_at': form['created_at'],
+                'expire_at': form['expire_at'],
+                'total_respondents': len(form['respondents']),
+                'total_responses': len(form['responses'])
+            })
+    return jsonify(user_forms)
+
+
 @app.route('/forms/<form_id>/invite-code', methods=['POST'])
 @auth_required
 def regenerate_invite(form_id):
@@ -157,6 +177,41 @@ def list_feedback(form_id):
     if form['created_by'] != request.user_id:
         return jsonify({'code': 'FORM_NOT_FOUND', 'message': '查無此表單'}), 404
     return jsonify(form['responses'])
+
+
+@app.route('/forms/<form_id>/results', methods=['GET'])
+@auth_required
+def generate_results(form_id):
+    form = forms.get(form_id)
+    if not form:
+        return jsonify({'code': 'FORM_NOT_FOUND', 'message': '查無此表單'}), 404
+    if form['created_by'] != request.user_id:
+        return jsonify({'code': 'FORM_NOT_FOUND', 'message': '查無此表單'}), 404
+    
+    # 生成結果統計
+    results = {
+        'form_id': form_id,
+        'title': form['title'],
+        'total_responses': len(form['responses']),
+        'total_respondents': len(form['respondents']),
+        'response_rate': f"{len(form['responses']) / len(form['respondents']) * 100:.1f}%" if form['respondents'] else "0%",
+        'responses': []
+    }
+    
+    # 整理回饋內容
+    for i, response in enumerate(form['responses'], 1):
+        results['responses'].append({
+            'response_id': i,
+            'feedback_content': response['feedback_content'],
+            'submitted_at': datetime.datetime.utcnow().isoformat() + 'Z'  # 模擬時間戳
+        })
+    
+    # 整理受邀者信息
+    results['respondents'] = [
+        {'name': r['name'], 'email': r['email']} for r in form['respondents']
+    ]
+    
+    return jsonify(results)
 
 
 def create_app():
