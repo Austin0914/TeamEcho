@@ -18,15 +18,15 @@ def create_app():
     
     # 載入配置
     app.config.from_object(Config)
-    
-    # 驗證配置
+      # 驗證配置
     try:
         Config.validate_config()
     except ValueError as e:
         print(f"配置錯誤: {e}")
         print("請檢查 .env 文件中的資料庫連接設定")
         return None
-      # 初始化擴展
+    
+    # 初始化擴展
     CORS(app)
     db.init_app(app)
     
@@ -385,7 +385,8 @@ def health_check():
     """健康檢查"""
     try:
         # 測試資料庫連接
-        db.session.execute('SELECT 1')
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
         return jsonify({
             'status': 'healthy',
             'database': 'connected',
