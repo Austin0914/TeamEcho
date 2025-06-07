@@ -1,0 +1,13 @@
+/* App.css - Main App component layout styles */
+
+/* App layout classes for view routing */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.dashboard-page {
+  padding: 2rem;
+}

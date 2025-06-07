@@ -1,0 +1,11 @@
+/* Register 組件樣式 - 與Login共用大部分樣式 */
+@import "./Login.css";
+
+/* Register特有的樣式可以在這裡添加 */
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #1976d2;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
