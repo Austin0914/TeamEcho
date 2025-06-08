@@ -99,6 +99,8 @@
 }
 
 .form-actions button {
+  background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+  border-radius: 0.8rem;
   width: auto;
   text-transform: none;
 }
@@ -185,50 +187,48 @@
   align-items: center;
 }
 
-.generate-results-btn {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  border: none;
-  padding: 0.7rem 1.2rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
+/* 統一按鈕樣式 - 生成結果按鈕和填寫連結 */
+.generate-results-btn,
+.fill-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: auto;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  min-width: 120px;
+  height: 44px;
+  box-sizing: border-box;
   text-transform: none;
+  letter-spacing: normal;
+}
+
+.generate-results-btn {
+  background: #28a745;
 }
 
 .generate-results-btn:hover {
-  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  background: #1e7e34;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .fill-link {
-  background: #1976d2;
-  color: white;
-  padding: 0.8rem 1.5rem;
-  text-decoration: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
 }
 
 .fill-link:hover {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
 }
 
-/* 響應式設計 */
 @media (max-width: 768px) {
   .dashboard-header {
     flex-direction: column;

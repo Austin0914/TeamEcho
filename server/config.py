@@ -18,7 +18,7 @@ class Config:    # PostgreSQL 連接配置
     # 構建 PostgreSQL 連接字串 (對密碼進行 URL 編碼)
     encoded_password = quote_plus(PGPASSWORD) if PGPASSWORD else ""
     SQLALCHEMY_DATABASE_URI = f"postgresql://{PGUSER}:{encoded_password}@{PGHOST}:{PGPORT}/{PGDATABASE}?sslmode=require"
-      # SQLAlchemy 設定
+    # SQLAlchemy 設定
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,  # 連接健康檢查

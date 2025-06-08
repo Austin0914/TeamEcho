@@ -107,7 +107,7 @@ ${results.responses.map((r, i) => `${i + 1}. ${r.feedback_content}`).join("\n")}
       }
     } catch (error) {
       console.error("生成結果時發生錯誤:", error);
-      alert("生成結果時發生錯誤，請檢查網路連線");
+      alert("尚未實作生成結果功能，請稍後再試");
     }
   };
 

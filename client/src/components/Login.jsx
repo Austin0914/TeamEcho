@@ -18,7 +18,6 @@ function Login({ onLogin, onSwitch, onCodeEntry }) {
     <div className="auth-wrapper">
       <h1 className="app-title">TeamEcho</h1>
       <div className="auth-main">
-        {/* 登入表單容器 */}
         <div className="auth-container">
           <div className="auth-content">
             <div className="auth-form-section">
@@ -58,10 +57,8 @@ function Login({ onLogin, onSwitch, onCodeEntry }) {
           </div>
         </div>
 
-        {/* 分隔符 */}
         <div className="divider">或</div>
 
-        {/* 邀請碼輸入容器 */}
         <div className="code-entry-container">
           <div className="code-entry-content">
             <h3>使用邀請碼</h3>

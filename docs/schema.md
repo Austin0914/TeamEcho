@@ -31,6 +31,7 @@ CREATE TABLE UserInfo (
 | `created_at`  | datetime     | 預設為 GETDATE()      | 建立時間                         |
 | `expire_at`   | datetime     | 可為 NULL             | 表單過期時間（可選）             |
 | `invite_code` | nvarchar(10) | UNIQUE, NOT NULL      | 填表邀請碼，供填寫者進入表單使用 |
+| `title`       | nvarchar(50) | NOT NULL              | 表單名稱                         |
 
 ```
 CREATE TABLE Form (
@@ -39,6 +40,7 @@ CREATE TABLE Form (
     created_at datetime DEFAULT GETDATE(),
     expire_at datetime,
     invite_code nvarchar(10) NOT NULL UNIQUE,
+    title nvarchar(50) NOT NULL,
     FOREIGN KEY (created_by) REFERENCES UserInfo(uniq_id)
 );
 ```
@@ -96,3 +98,7 @@ CREATE TABLE Feedback (
     FOREIGN KEY (form_id, person_uid) REFERENCES Respondent(form_id, person_uid)
 );
 ```
+
+## API
+
+in openapi.yaml

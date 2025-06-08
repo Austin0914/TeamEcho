@@ -2,7 +2,8 @@
 __pycache__/
 *.pyc
 .venv/
-test/
 *.zip
 app_settings.json
 .git/
+.gitignore
+deploy.zip

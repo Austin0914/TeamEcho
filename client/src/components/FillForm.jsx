@@ -19,11 +19,10 @@ function FillForm({ onBack }) {
       return;
     }
 
-    fetch(`${API_BASE_URL}/invite/${inviteCode}`)
+    fetch(`${API_BASE_URL}/forms/${inviteCode}`)
       .then((r) => (r.ok ? r.json() : Promise.reject("邀請碼無效")))
       .then((data) => {
         setForm(data);
-        // 初始化每個受邀者的回饋內容為空字符串
         const initialFeedbacks = {};
         if (data.respondents) {
           data.respondents.forEach((respondent) => {
@@ -45,7 +44,6 @@ function FillForm({ onBack }) {
       [email]: content,
     }));
   };
-
   const submit = async () => {
     // 檢查是否至少有一個回饋內容
     const hasContent = Object.values(feedbacks).some((content) =>
@@ -59,24 +57,31 @@ function FillForm({ onBack }) {
     setSubmitting(true);
 
     try {
-      // 為每個有內容的受邀者提交回饋
-      const submissions = Object.entries(feedbacks)
+      const feedbacksToSubmit = Object.entries(feedbacks)
         .filter(([email, content]) => content.trim())
-        .map(([email, content]) =>
-          fetch(`${API_BASE_URL}/invite/${inviteCode}/responses`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              respondent_email: email,
-              feedback_content: content.trim(),
-            }),
-          })
-        );
+        .map(([email, content]) => {
+          const respondent = form.respondents.find((r) => r.email === email);
+          return {
+            respondent_name: respondent.name,
+            respondent_email: email,
+            feedback_content: content.trim(),
+          };
+        });
 
-      const results = await Promise.all(submissions);
-      const allSuccessful = results.every((res) => res.ok);
+      console.log(feedbacksToSubmit);
 
-      if (allSuccessful) {
+      const response = await fetch(
+        `${API_BASE_URL}/forms/${inviteCode}/feedback`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            feedbacks: feedbacksToSubmit,
+          }),
+        }
+      );
+
+      if (response.ok) {
         alert("感謝填寫！所有回饋已成功提交");
         // 清空所有回饋內容
         const clearedFeedbacks = {};
@@ -85,9 +90,12 @@ function FillForm({ onBack }) {
         });
         setFeedbacks(clearedFeedbacks);
       } else {
-        alert("部分回饋提交失敗，請重試");
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || "提交失敗，請重試";
+        alert(errorMessage);
       }
     } catch (error) {
+      console.error("提交錯誤:", error);
       alert("提交失敗，請檢查網路連線");
     } finally {
       setSubmitting(false);
@@ -95,7 +103,6 @@ function FillForm({ onBack }) {
   };
 
   const handleBack = () => {
-    // 清除 URL 參數
     window.history.pushState({}, "", window.location.pathname);
     onBack();
   };

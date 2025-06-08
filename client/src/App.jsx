@@ -10,7 +10,6 @@ import "./App.css";
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [view, setView] = useState(() => {
-    // 檢查 URL 參數來決定初始視圖
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get("code");
     if (inviteCode) {

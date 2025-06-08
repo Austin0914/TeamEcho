@@ -8,7 +8,6 @@ import uuid
 import datetime
 import traceback
 
-# 導入資料庫相關模組
 from models import db, User, UserToken, Form, Respondent, Feedback
 from config import Config
 
@@ -18,7 +17,8 @@ def create_app():
     
     # 載入配置
     app.config.from_object(Config)
-      # 驗證配置
+    
+    # 驗證配置
     try:
         Config.validate_config()
     except ValueError as e:
@@ -198,7 +198,6 @@ def create_form():
                 'message': '受邀者 email 重複'
             }), 409
         
-        # 創建表單
         form = Form(
             title=title,
             creator_id=request.user_id,
@@ -224,7 +223,7 @@ def create_form():
             'title': form.title,
             'invite_code': form.invite_code,
             'created_at': form.created_at.isoformat() + 'Z',
-            'expire_at': None  # 可以後續添加過期功能
+            'expire_at': None
         }), 201
         
     except Exception as e:
@@ -287,6 +286,7 @@ def get_form_by_invite(invite_code):
 def submit_feedback(invite_code):
     """提交反饋"""
     try:
+        # 先檢查是否有對應的表單
         form = Form.query.filter_by(invite_code=invite_code).first()
         if not form:
             return jsonify({
@@ -295,7 +295,10 @@ def submit_feedback(invite_code):
             }), 404
         
         data = request.get_json(force=True)
-        feedbacks = data.get('feedbacks', [])
+        if isinstance(data, list):
+            feedbacks = data
+        else:
+            feedbacks = data.get('feedbacks', [])
         
         # 提交每個反饋
         for feedback_data in feedbacks:
@@ -319,36 +322,35 @@ def submit_feedback(invite_code):
             'message': '內部伺服器錯誤'
         }), 500
 
-@app.route('/forms/<form_id>/responses', methods=['GET'])
-@auth_required
-def get_form_responses(form_id):
-    """獲取表單的所有回應"""
-    try:
-        form = Form.query.filter_by(id=form_id, creator_id=request.user_id).first()
-        if not form:
-            return jsonify({
-                'code': 'FORM_NOT_FOUND',
-                'message': '找不到對應的表單'
-            }), 404
+# @app.route('/forms/<form_id>/responses', methods=['POST'])
+# def get_form_responses(form_id):
+#     """獲取表單的所有回應"""
+#     try:
+#         form = Form.query.filter_by(id=form_id, creator_id=request.user_id).first()
+#         if not form:
+#             return jsonify({
+#                 'code': 'FORM_NOT_FOUND',
+#                 'message': '找不到對應的表單'
+#             }), 404
         
-        responses = []
-        for i, feedback in enumerate(form.feedbacks):
-            responses.append({
-                'response_id': i,
-                'respondent_name': feedback.respondent_name,
-                'respondent_email': feedback.respondent_email,
-                'feedback_content': feedback.feedback_text,
-                'created_at': feedback.created_at.isoformat() + 'Z' if feedback.created_at else None
-            })
+#         responses = []
+#         for i, feedback in enumerate(form.feedbacks):
+#             responses.append({
+#                 'response_id': i,
+#                 'respondent_name': feedback.respondent_name,
+#                 'respondent_email': feedback.respondent_email,
+#                 'feedback_content': feedback.feedback_text,
+#                 'created_at': feedback.created_at.isoformat() + 'Z' if feedback.created_at else None
+#             })
         
-        return jsonify(responses)
+#         return jsonify(responses)
         
-    except Exception as e:
-        print(f"獲取表單回應錯誤: {traceback.format_exc()}")
-        return jsonify({
-            'code': 'INTERNAL_ERROR',
-            'message': '內部伺服器錯誤'
-        }), 500
+#     except Exception as e:
+#         print(f"獲取表單回應錯誤: {traceback.format_exc()}")
+#         return jsonify({
+#             'code': 'INTERNAL_ERROR',
+#             'message': '內部伺服器錯誤'
+#         }), 500
 
 @app.route('/forms/<form_id>/results', methods=['GET'])
 @auth_required

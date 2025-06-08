@@ -39,20 +39,18 @@ class UserToken(db.Model):
 
 class Form(db.Model):
     __tablename__ = 'forms'
-    
+
     id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     title = db.Column(db.String(200), nullable=False)
     creator_id = db.Column(db.String(32), db.ForeignKey('users.id'), nullable=False)
     invite_code = db.Column(db.String(50), unique=True, nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # 關聯關係
     respondents = db.relationship('Respondent', backref='form', lazy=True, cascade='all, delete-orphan')
     feedbacks = db.relationship('Feedback', backref='form', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
-            'id': self.id,
             'title': self.title,
             'creator_id': self.creator_id,
             'invite_code': self.invite_code,
@@ -94,4 +92,20 @@ class Feedback(db.Model):
             'respondent_email': self.respondent_email,
             'feedback_text': self.feedback_text,
             'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Person(db.model):
+    __tablename__ = 'Person'
+    
+    person_id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    creator_id = db.Column(db.String(32), db.ForeignKey('users.id'), nullable=False)
+    
+    def to_dict(self):
+        return {
+            'person_id': self.person_id,
+            'name': self.name,
+            'email': self.email,
+            'created_at': self.creator_id
         }
